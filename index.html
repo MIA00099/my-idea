@@ -3,23 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AgriConnect Pro - Farmer Dashboard</title>
+  <title>AgriConnect Pro - Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-   <script type="module" src="app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage-compat.js"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            primary: '#2bed05',
-            darkBg: '#0f172a',
-            darkCard: '#1e293b',
+            primary: '#2bed05'
           },
           fontFamily: {
             sans: ['Poppins', 'sans-serif']
@@ -29,180 +26,491 @@
     }
   </script>
 </head>
-<body class="bg-gray-50 dark:bg-darkBg font-sans transition-colors duration-300">
+<body class="bg-gray-100 font-sans">
   <!-- Header -->
-  <header class="flex items-center justify-between p-4 bg-white dark:bg-darkCard shadow-sm sticky top-0 z-50">
-    <div class="flex items-center">
-      <img src="https://via.placeholder.com/40" alt="AgriConnect Logo" class="w-8 h-8 mr-2 rounded-full">
-      <h1 class="text-lg font-bold text-primary">AgriConnect<span class="text-green-400">Pro</span></h1>
-    </div>
-    <div class="flex items-center space-x-3">
-      <button id="themeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-        <i class="fas fa-moon"></i>
-      </button>
-      <img id="userPhoto" src="https://via.placeholder.com/40" class="w-8 h-8 rounded-full border border-green-300" alt="Profile">
+  <header class="bg-white shadow-sm">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center">
+        <h1 class="text-xl font-bold text-primary">AgriConnect<span class="text-green-400">Pro</span></h1>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div id="userInfo" class="flex items-center space-x-2">
+          <img id="userPhoto" class="w-8 h-8 rounded-full" src="" alt="User Photo">
+          <span id="userName" class="text-sm font-medium"></span>
+        </div>
+        <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
+          <i class="fas fa-sign-out-alt mr-1"></i> Logout
+        </button>
+      </div>
     </div>
   </header>
 
   <!-- Main Content -->
-  <main class="p-4 md:p-6 space-y-6">
-    <!-- Welcome Banner -->
-    <section class="p-6 rounded-xl bg-gradient-to-r from-primary to-green-500 text-white overflow-hidden relative">
-      <div class="relative z-10">
-        <h2 class="text-2xl font-semibold mb-2">Welcome back, <span id="welcomeName">Loading...</span> 👋</h2>
-        <p class="text-sm opacity-90 mb-4">Track your farm progress in real-time</p>
-        <div class="grid grid-cols-3 gap-4">
-          <div class="bg-white/20 rounded-lg p-3 text-center">
-            <p class="text-xs">Active Listings</p>
-            <h3 id="activeListings" class="text-xl font-bold">0</h3>
-          </div>
-          <div class="bg-white/20 rounded-lg p-3 text-center">
-            <p class="text-xs">Today's Orders</p>
-            <h3 id="todayOrders" class="text-xl font-bold">0</h3>
-          </div>
-          <div class="bg-white/20 rounded-lg p-3 text-center">
-            <p class="text-xs">Earnings</p>
-            <h3 id="todayEarnings" class="text-xl font-bold">RWF 0</h3>
-          </div>
-        </div>
+  <main class="container mx-auto px-4 py-6">
+    <!-- Welcome Section -->
+    <section class="mb-8">
+      <div class="bg-gradient-to-r from-primary to-green-400 rounded-xl p-6 text-white shadow-lg">
+        <h2 class="text-2xl font-bold mb-2">Welcome back, <span id="welcomeName"></span>!</h2>
+        <p class="opacity-90">Manage your crops, explore market opportunities, and connect with buyers.</p>
       </div>
     </section>
 
-    <!-- Quick Stats -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="p-5 bg-white dark:bg-darkCard rounded-xl shadow hover:shadow-md transition">
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Total Orders</p>
-            <h3 id="totalOrders" class="text-2xl font-bold text-gray-800 dark:text-white">0</h3>
-          </div>
-          <i class="fas fa-shopping-bag text-primary text-xl"></i>
-        </div>
+    <!-- Dashboard Tabs -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+      <div class="border-b">
+        <nav class="flex">
+          <button id="dashboardTab" class="tab-button active px-6 py-3 font-medium text-primary border-b-2 border-primary">
+            <i class="fas fa-tachometer-alt mr-2"></i> Farmer Dashboard
+          </button>
+          <button id="marketTab" class="tab-button px-6 py-3 font-medium text-gray-500 hover:text-gray-700">
+            <i class="fas fa-store mr-2"></i> Explore Market
+          </button>
+        </nav>
       </div>
-      <div class="p-5 bg-white dark:bg-darkCard rounded-xl shadow hover:shadow-md transition">
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Total Earnings</p>
-            <h3 id="totalEarnings" class="text-2xl font-bold text-gray-800 dark:text-white">RWF 0</h3>
-          </div>
-          <i class="fas fa-coins text-yellow-500 text-xl"></i>
-        </div>
-      </div>
-      <div class="p-5 bg-white dark:bg-darkCard rounded-xl shadow hover:shadow-md transition">
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Customer Rating</p>
-            <h3 id="customerRating" class="text-2xl font-bold text-gray-800 dark:text-white">4.8</h3>
-          </div>
-          <i class="fas fa-star text-yellow-400 text-xl"></i>
-        </div>
-      </div>
-      <div class="p-5 bg-white dark:bg-darkCard rounded-xl shadow hover:shadow-md transition">
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Active Crops</p>
-            <h3 id="activeCrops" class="text-2xl font-bold text-gray-800 dark:text-white">0</h3>
-          </div>
-          <i class="fas fa-seedling text-primary text-xl"></i>
-        </div>
-      </div>
-    </section>
 
-    <!-- Posted Crops -->
-    <section class="bg-white dark:bg-darkCard rounded-xl p-5 shadow">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-white flex items-center">
-          <i class="fas fa-leaf text-primary mr-2"></i> My Posted Crops
-        </h3>
-        <button class="text-gray-500 hover:text-primary text-sm flex items-center">
-          <i class="fas fa-sync-alt mr-1"></i> Refresh
-        </button>
-      </div>
-      <div id="postedCrops" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg animate-pulse">
-          <div class="bg-gray-200 dark:bg-gray-600 h-40 rounded-lg mb-3"></div>
-          <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
-          <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-1/2"></div>
+      <!-- Tab Content -->
+      <div class="p-6">
+        <!-- Farmer Dashboard Content -->
+        <div id="dashboardContent" class="tab-content active">
+          <h3 class="text-xl font-bold mb-4">Manage Your Farming Details</h3>
+          
+          <!-- Profile Form -->
+          <form id="farmerForm" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Profile Photo Upload -->
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
+                <div class="flex items-center space-x-4">
+                  <div class="relative">
+                    <img id="profilePreview" class="w-24 h-24 rounded-full object-cover border-2 border-gray-300" src="https://via.placeholder.com/100" alt="Profile Preview">
+                    <input type="file" id="profilePhoto" accept="image/*" class="hidden">
+                  </div>
+                  <div>
+                    <button type="button" id="uploadPhotoBtn" class="bg-primary hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                      <i class="fas fa-upload mr-1"></i> Upload Photo
+                    </button>
+                    <p class="text-xs text-gray-500 mt-1">JPG, PNG or GIF (Max 5MB)</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- WhatsApp Number -->
+              <div>
+                <label for="whatsapp" class="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
+                <input type="tel" id="whatsapp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="+1234567890">
+              </div>
+
+              <!-- Farm Location -->
+              <div>
+                <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Farm Location</label>
+                <input type="text" id="location" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="Enter your farm location">
+              </div>
+
+              <!-- Crop Type -->
+              <div>
+                <label for="cropType" class="block text-sm font-medium text-gray-700 mb-1">Crop Type</label>
+                <select id="cropType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                  <option value="">Select Crop Type</option>
+                  <option value="wheat">Wheat</option>
+                  <option value="rice">Rice</option>
+                  <option value="corn">Corn</option>
+                  <option value="soybean">Soybean</option>
+                  <option value="cotton">Cotton</option>
+                  <option value="vegetables">Vegetables</option>
+                  <option value="fruits">Fruits</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <!-- Crop Variety -->
+              <div>
+                <label for="cropVariety" class="block text-sm font-medium text-gray-700 mb-1">Crop Variety</label>
+                <input type="text" id="cropVariety" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="Enter crop variety">
+              </div>
+
+              <!-- Planting Date -->
+              <div>
+                <label for="plantingDate" class="block text-sm font-medium text-gray-700 mb-1">Planting Date</label>
+                <input type="date" id="plantingDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+              </div>
+
+              <!-- Expected Harvest Date -->
+              <div>
+                <label for="harvestDate" class="block text-sm font-medium text-gray-700 mb-1">Expected Harvest Date</label>
+                <input type="date" id="harvestDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+              </div>
+
+              <!-- Estimated Yield -->
+              <div>
+                <label for="yield" class="block text-sm font-medium text-gray-700 mb-1">Estimated Yield (kg/hectare)</label>
+                <input type="number" id="yield" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="Enter estimated yield">
+              </div>
+
+              <!-- Additional Notes -->
+              <div class="col-span-2">
+                <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
+                <textarea id="notes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="Any additional information about your crops"></textarea>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-end">
+              <button type="submit" class="bg-primary hover:bg-green-500 text-white px-6 py-2 rounded-lg font-medium">
+                <i class="fas fa-save mr-1"></i> Save Details
+              </button>
+            </div>
+          </form>
+
+          <!-- Current Crop Details -->
+          <div class="mt-8">
+            <h3 class="text-xl font-bold mb-4">Your Current Crop Details</h3>
+            <div id="cropDetails" class="bg-gray-50 rounded-lg p-4">
+              <p class="text-gray-500 text-center">No crop details saved yet. Fill out the form above to add your crop information.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Market Explorer Content -->
+        <div id="marketContent" class="tab-content hidden">
+          <h3 class="text-xl font-bold mb-4">Explore Market Opportunities</h3>
+          
+          <!-- Market Filters -->
+          <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <div class="flex flex-wrap gap-4">
+              <div>
+                <label for="marketCropFilter" class="block text-sm font-medium text-gray-700 mb-1">Crop Type</label>
+                <select id="marketCropFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                  <option value="all">All Crops</option>
+                  <option value="wheat">Wheat</option>
+                  <option value="rice">Rice</option>
+                  <option value="corn">Corn</option>
+                  <option value="soybean">Soybean</option>
+                  <option value="cotton">Cotton</option>
+                  <option value="vegetables">Vegetables</option>
+                  <option value="fruits">Fruits</option>
+                </select>
+              </div>
+              <div>
+                <label for="marketLocationFilter" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <select id="marketLocationFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                  <option value="all">All Locations</option>
+                  <option value="north">Northern Region</option>
+                  <option value="south">Southern Region</option>
+                  <option value="east">Eastern Region</option>
+                  <option value="west">Western Region</option>
+                </select>
+              </div>
+              <div class="flex items-end">
+                <button id="applyFilters" class="bg-primary hover:bg-green-500 text-white px-4 py-2 rounded-lg font-medium">
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Market Listings -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Market Card 1 -->
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+              <div class="p-4">
+                <div class="flex justify-between items-start mb-2">
+                  <h4 class="font-bold text-lg">Premium Wheat Buyers</h4>
+                  <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">High Demand</span>
+                </div>
+                <p class="text-gray-600 text-sm mb-4">Looking for high-quality wheat with protein content above 12%</p>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> Northern Region</span>
+                  <span class="font-medium text-primary">$320/ton</span>
+                </div>
+              </div>
+              <div class="bg-gray-50 px-4 py-3 flex justify-between items-center">
+                <span class="text-xs text-gray-500">Posted 2 days ago</span>
+                <button class="text-primary hover:text-green-500 text-sm font-medium">
+                  <i class="fas fa-phone-alt mr-1"></i> Contact
+                </button>
+              </div>
+            </div>
+
+            <!-- Market Card 2 -->
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+              <div class="p-4">
+                <div class="flex justify-between items-start mb-2">
+                  <h4 class="font-bold text-lg">Organic Vegetables</h4>
+                  <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Certified Organic</span>
+                </div>
+                <p class="text-gray-600 text-sm mb-4">Restaurant chain seeking certified organic vegetables for premium menu</p>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> Eastern Region</span>
+                  <span class="font-medium text-primary">Negotiable</span>
+                </div>
+              </div>
+              <div class="bg-gray-50 px-4 py-3 flex justify-between items-center">
+                <span class="text-xs text-gray-500">Posted 5 days ago</span>
+                <button class="text-primary hover:text-green-500 text-sm font-medium">
+                  <i class="fas fa-phone-alt mr-1"></i> Contact
+                </button>
+              </div>
+            </div>
+
+            <!-- Market Card 3 -->
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+              <div class="p-4">
+                <div class="flex justify-between items-start mb-2">
+                  <h4 class="font-bold text-lg">Rice Exporters</h4>
+                  <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Export Quality</span>
+                </div>
+                <p class="text-gray-600 text-sm mb-4">Export company seeking basmati rice for international markets</p>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> All Regions</span>
+                  <span class="font-medium text-primary">$450/ton</span>
+                </div>
+              </div>
+              <div class="bg-gray-50 px-4 py-3 flex justify-between items-center">
+                <span class="text-xs text-gray-500">Posted 1 week ago</span>
+                <button class="text-primary hover:text-green-500 text-sm font-medium">
+                  <i class="fas fa-phone-alt mr-1"></i> Contact
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Market Stats -->
+          <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+              <div class="flex items-center">
+                <div class="bg-green-100 p-3 rounded-lg mr-4">
+                  <i class="fas fa-chart-line text-primary text-xl"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Average Price</p>
+                  <p class="text-xl font-bold">$385/ton</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+              <div class="flex items-center">
+                <div class="bg-blue-100 p-3 rounded-lg mr-4">
+                  <i class="fas fa-users text-blue-500 text-xl"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Active Buyers</p>
+                  <p class="text-xl font-bold">142</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+              <div class="flex items-center">
+                <div class="bg-yellow-100 p-3 rounded-lg mr-4">
+                  <i class="fas fa-tags text-yellow-500 text-xl"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Your Listings</p>
+                  <p class="text-xl font-bold">3</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
   </main>
 
-  <!-- Firebase Config, Auth, and Real-Time Data Fetch -->
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const firebaseConfig = {
-  apiKey: "AIzaSyBHgsQPKD3sfPd3Bov-GGLWN0E4PzDA3Rw",
-  authDomain: "my-idea-b59e7.firebaseapp.com",
-  projectId: "my-idea-b59e7",
-  storageBucket: "my-idea-b59e7.firebasestorage.app",
-  messagingSenderId: "551780677757",
-  appId: "1:551780677757:web:dcdced40d164eebbd31914",
-  measurementId: "G-CXNETEQXTJ"
-};
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBHgsQPKD3sfPd3Bov-GGLWN0E4PzDA3Rw",
+      authDomain: "my-idea-b59e7.firebaseapp.com",
+      projectId: "my-idea-b59e7",
+      storageBucket: "my-idea-b59e7.firebasestorage.app",
+      messagingSenderId: "551780677757",
+      appId: "1:551780677757:web:dcdced40d164eebbd31914",
+      measurementId: "G-CXNETEQXTJ"
+    };
 
-      if (typeof firebase !== 'undefined' && firebase.initializeApp) {
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
 
-        auth.onAuthStateChanged(async (user) => {
-          if (user) {
-            document.getElementById('welcomeName').innerText = user.displayName || 'Farmer';
-            document.getElementById('userPhoto').src = user.photoURL || 'https://via.placeholder.com/40';
-
-            // Fetch real-time farmer stats from Firestore
-            const statsRef = db.collection('farmers').doc(user.uid);
-            statsRef.onSnapshot((doc) => {
-              if (doc.exists) {
-                const data = doc.data();
-                document.getElementById('totalOrders').innerText = data.totalOrders || 0;
-                document.getElementById('totalEarnings').innerText = `RWF ${data.totalEarnings || 0}`;
-                document.getElementById('activeCrops').innerText = data.activeCrops || 0;
-                document.getElementById('todayOrders').innerText = data.todayOrders || 0;
-                document.getElementById('todayEarnings').innerText = `RWF ${data.todayEarnings || 0}`;
-              }
-            });
-
-            // Fetch real-time crops list
-            const cropsRef = db.collection('farmers').doc(user.uid).collection('crops');
-            cropsRef.onSnapshot(snapshot => {
-              const cropsContainer = document.getElementById('postedCrops');
-              cropsContainer.innerHTML = '';
-              if (snapshot.empty) {
-                cropsContainer.innerHTML = `<p class='text-gray-500 dark:text-gray-400 text-center py-4'>No crops posted yet.</p>`;
-              } else {
-                snapshot.forEach(doc => {
-                  const crop = doc.data();
-                  cropsContainer.innerHTML += `
-                    <div class='p-4 border border-gray-200 dark:border-gray-700 rounded-lg'>
-                      <img src='${crop.image || 'https://via.placeholder.com/200'}' class='h-40 w-full object-cover rounded mb-3' alt='${crop.name}'>
-                      <h4 class='text-lg font-semibold text-gray-800 dark:text-white'>${crop.name}</h4>
-                      <p class='text-sm text-gray-500 dark:text-gray-400'>${crop.quantity} ${crop.unit} @ RWF ${crop.price}</p>
-                    </div>`;
-                });
-              }
-            });
-
-          } else {
-            window.location.href = 'login.html';
-          }
-        });
+    // Check authentication state
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        // Redirect to login if not authenticated
+        window.location.href = 'login.html';
       } else {
-        console.error('Firebase SDK not loaded properly.');
+        // User is signed in
+        document.getElementById('userPhoto').src = user.photoURL || 'https://via.placeholder.com/100';
+        document.getElementById('userName').textContent = user.displayName || 'User';
+        document.getElementById('welcomeName').textContent = user.displayName || 'Farmer';
+        
+        // Load user data from Firestore
+        loadUserData(user.uid);
       }
     });
-  </script>
 
-  <!-- Dark Mode Toggle -->
-  <script>
-    const themeToggle = document.getElementById('themeToggle');
-    const html = document.documentElement;
-    themeToggle.addEventListener('click', () => {
-      html.classList.toggle('dark');
-      const icon = themeToggle.querySelector('i');
-      icon.classList.toggle('fa-moon');
-      icon.classList.toggle('fa-sun');
+    // Logout functionality
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      auth.signOut().then(() => {
+        window.location.href = 'login.html';
+      }).catch(error => {
+        console.error('Logout error:', error);
+      });
+    });
+
+    // Tab switching functionality
+    document.getElementById('dashboardTab').addEventListener('click', () => {
+      switchTab('dashboard');
+    });
+
+    document.getElementById('marketTab').addEventListener('click', () => {
+      switchTab('market');
+    });
+
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active', 'text-primary', 'border-primary');
+        button.classList.add('text-gray-500');
+      });
+
+      // Show/hide tab content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+        content.classList.remove('active');
+      });
+
+      if (tabName === 'dashboard') {
+        document.getElementById('dashboardTab').classList.add('active', 'text-primary', 'border-primary');
+        document.getElementById('dashboardTab').classList.remove('text-gray-500');
+        document.getElementById('dashboardContent').classList.remove('hidden');
+        document.getElementById('dashboardContent').classList.add('active');
+      } else if (tabName === 'market') {
+        document.getElementById('marketTab').classList.add('active', 'text-primary', 'border-primary');
+        document.getElementById('marketTab').classList.remove('text-gray-500');
+        document.getElementById('marketContent').classList.remove('hidden');
+        document.getElementById('marketContent').classList.add('active');
+      }
+    }
+
+    // Profile photo upload
+    document.getElementById('uploadPhotoBtn').addEventListener('click', () => {
+      document.getElementById('profilePhoto').click();
+    });
+
+    document.getElementById('profilePhoto').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          document.getElementById('profilePreview').src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+        
+        // In a real implementation, you would upload this to Firebase Storage
+        // and update the user's profile photo URL
+      }
+    });
+
+    // Form submission
+    document.getElementById('farmerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const user = auth.currentUser;
+      if (!user) return;
+      
+      const farmerData = {
+        whatsapp: document.getElementById('whatsapp').value,
+        location: document.getElementById('location').value,
+        cropType: document.getElementById('cropType').value,
+        cropVariety: document.getElementById('cropVariety').value,
+        plantingDate: document.getElementById('plantingDate').value,
+        harvestDate: document.getElementById('harvestDate').value,
+        yield: document.getElementById('yield').value,
+        notes: document.getElementById('notes').value,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      
+      // Save to Firestore
+      db.collection('farmers').doc(user.uid).set(farmerData, { merge: true })
+        .then(() => {
+          alert('Your farming details have been saved successfully!');
+          updateCropDetailsDisplay(farmerData);
+        })
+        .catch(error => {
+          console.error('Error saving farmer data:', error);
+          alert('Error saving your details. Please try again.');
+        });
+    });
+
+    // Load user data from Firestore
+    function loadUserData(userId) {
+      db.collection('farmers').doc(userId).get()
+        .then(doc => {
+          if (doc.exists) {
+            const data = doc.data();
+            // Populate form fields
+            document.getElementById('whatsapp').value = data.whatsapp || '';
+            document.getElementById('location').value = data.location || '';
+            document.getElementById('cropType').value = data.cropType || '';
+            document.getElementById('cropVariety').value = data.cropVariety || '';
+            document.getElementById('plantingDate').value = data.plantingDate || '';
+            document.getElementById('harvestDate').value = data.harvestDate || '';
+            document.getElementById('yield').value = data.yield || '';
+            document.getElementById('notes').value = data.notes || '';
+            
+            // Update crop details display
+            updateCropDetailsDisplay(data);
+          }
+        })
+        .catch(error => {
+          console.error('Error loading user data:', error);
+        });
+    }
+
+    // Update the crop details display
+    function updateCropDetailsDisplay(data) {
+      const cropDetails = document.getElementById('cropDetails');
+      
+      if (data.cropType) {
+        cropDetails.innerHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white p-4 rounded-lg border border-gray-200">
+              <h4 class="font-bold text-lg mb-2">Crop Information</h4>
+              <div class="space-y-2">
+                <p><span class="font-medium">Type:</span> ${data.cropType}</p>
+                <p><span class="font-medium">Variety:</span> ${data.cropVariety || 'Not specified'}</p>
+                <p><span class="font-medium">Planted:</span> ${data.plantingDate || 'Not specified'}</p>
+                <p><span class="font-medium">Expected Harvest:</span> ${data.harvestDate || 'Not specified'}</p>
+              </div>
+            </div>
+            <div class="bg-white p-4 rounded-lg border border-gray-200">
+              <h4 class="font-bold text-lg mb-2">Yield & Location</h4>
+              <div class="space-y-2">
+                <p><span class="font-medium">Estimated Yield:</span> ${data.yield ? data.yield + ' kg/hectare' : 'Not specified'}</p>
+                <p><span class="font-medium">Location:</span> ${data.location || 'Not specified'}</p>
+                <p><span class="font-medium">Contact:</span> ${data.whatsapp || 'Not specified'}</p>
+              </div>
+            </div>
+          </div>
+          ${data.notes ? `
+            <div class="mt-4 bg-white p-4 rounded-lg border border-gray-200">
+              <h4 class="font-bold text-lg mb-2">Additional Notes</h4>
+              <p>${data.notes}</p>
+            </div>
+          ` : ''}
+        `;
+      }
+    }
+
+    // Market filter functionality
+    document.getElementById('applyFilters').addEventListener('click', () => {
+      const cropFilter = document.getElementById('marketCropFilter').value;
+      const locationFilter = document.getElementById('marketLocationFilter').value;
+      
+      // In a real implementation, this would filter the market listings
+      // For now, we'll just show an alert
+      alert(`Filters applied:\nCrop: ${cropFilter}\nLocation: ${locationFilter}`);
     });
   </script>
 </body>
