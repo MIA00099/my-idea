@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgriConnect Pro - Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2bed05'
+          },
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen font-sans">
+  <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-sm text-center">
+    <h1 class="text-2xl font-bold text-primary mb-4">AgriConnect<span class="text-green-400">Pro</span></h1>
+    <p class="text-gray-500 mb-6">Sign in to access your farmer dashboard</p>
+
+    <button id="googleLogin" class="w-full bg-primary hover:bg-green-500 text-white py-3 rounded-lg font-medium flex items-center justify-center">
+      <i class="fab fa-google mr-2"></i> Sign in with Google
+    </button>
+
+    <p class="text-xs text-gray-400 mt-4">Powered by Firebase Authentication</p>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+  apiKey: "AIzaSyBHgsQPKD3sfPd3Bov-GGLWN0E4PzDA3Rw",
+  authDomain: "my-idea-b59e7.firebaseapp.com",
+  projectId: "my-idea-b59e7",
+  storageBucket: "my-idea-b59e7.firebasestorage.app",
+  messagingSenderId: "551780677757",
+  appId: "1:551780677757:web:dcdced40d164eebbd31914",
+  measurementId: "G-CXNETEQXTJ"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    document.getElementById('googleLogin').addEventListener('click', () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then(() => {
+          window.location.href = 'index.html'; // redirect to dashboard
+        })
+        .catch(err => alert(err.message));
+    });
+  </script>
+</body>
+</html>
