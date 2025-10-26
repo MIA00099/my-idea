@@ -3,316 +3,609 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AgriConnect Pro - Dashboard</title>
+  <title>AgriConnect Pro - Farm to Market</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage-compat.js"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#2bed05'
-          },
-          fontFamily: {
-            sans: ['Poppins', 'sans-serif']
-          }
-        }
-      }
+  <style>
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
     }
-  </script>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-gradient-to-br from-green-50 to-green-100 min-h-screen font-sans">
   <!-- Header -->
-  <header class="bg-white shadow-sm">
+  <header class="bg-white shadow-sm sticky top-0 z-10">
     <div class="container mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center">
-        <h1 class="text-xl font-bold text-primary">AgriConnect<span class="text-green-400">Pro</span></h1>
+        <h1 class="text-2xl font-bold text-green-600">AgriConnect<span class="text-green-400">Pro</span></h1>
       </div>
-      <div class="flex items-center space-x-4">
-        <div id="userInfo" class="flex items-center space-x-2">
-          <img id="userPhoto" class="w-8 h-8 rounded-full" src="" alt="User Photo">
-          <span id="userName" class="text-sm font-medium"></span>
+      <div id="userSection" class="hidden">
+        <div class="flex items-center space-x-4">
+          <div id="userInfo" class="flex items-center space-x-2">
+            <img id="userPhoto" class="w-8 h-8 rounded-full" src="" alt="User Photo">
+            <span id="userName" class="text-sm font-medium"></span>
+          </div>
+          <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-sign-out-alt mr-1"></i> Logout
+          </button>
         </div>
-        <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
-          <i class="fas fa-sign-out-alt mr-1"></i> Logout
-        </button>
       </div>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="container mx-auto px-4 py-6">
+  <!-- Main Content Area -->
+  <main class="container mx-auto px-4 py-8">
     <!-- Welcome Section -->
-    <section class="mb-8">
-      <div class="bg-gradient-to-r from-primary to-green-400 rounded-xl p-6 text-white shadow-lg">
-        <h2 class="text-2xl font-bold mb-2">Welcome back, <span id="welcomeName"></span>!</h2>
-        <p class="opacity-90">Manage your crops, explore market opportunities, and connect with buyers.</p>
+    <section id="welcomeSection" class="text-center mb-12 fade-in">
+      <h2 class="text-4xl font-bold text-gray-800 mb-4">Welcome to AgriConnect Pro</h2>
+      <p class="text-xl text-gray-600 max-w-2xl mx-auto">Connecting farmers directly with customers for fresh, locally sourced produce.</p>
+    </section>
+
+    <!-- User Type Selection -->
+    <section id="userTypeSection" class="max-w-4xl mx-auto mb-12 fade-in">
+      <div class="bg-white rounded-2xl shadow-lg p-8">
+        <h3 class="text-2xl font-bold text-center text-gray-800 mb-6">How would you like to use AgriConnect Pro?</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- Customer Card -->
+          <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 card-hover border border-blue-200 cursor-pointer" id="customerCard">
+            <div class="text-center">
+              <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-shopping-basket text-blue-600 text-2xl"></i>
+              </div>
+              <h4 class="text-xl font-bold text-blue-700 mb-2">I'm a Customer</h4>
+              <p class="text-blue-600 mb-4">Browse fresh produce directly from local farmers</p>
+              <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                Explore Market <i class="fas fa-arrow-right ml-2"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Farmer Card -->
+          <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 card-hover border border-green-200 cursor-pointer" id="farmerCard">
+            <div class="text-center">
+              <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-tractor text-green-600 text-2xl"></i>
+              </div>
+              <h4 class="text-xl font-bold text-green-700 mb-2">I'm a Farmer</h4>
+              <p class="text-green-600 mb-4">Sell your produce directly to customers</p>
+              <button class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                Login / Sign Up <i class="fas fa-arrow-right ml-2"></i>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- Dashboard Tabs -->
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-      <div class="border-b">
-        <nav class="flex">
-          <button id="dashboardTab" class="tab-button active px-6 py-3 font-medium text-primary border-b-2 border-primary">
-            <i class="fas fa-tachometer-alt mr-2"></i> Farmer Dashboard
-          </button>
-          <button id="marketTab" class="tab-button px-6 py-3 font-medium text-gray-500 hover:text-gray-700">
-            <i class="fas fa-store mr-2"></i> Explore Market
-          </button>
-        </nav>
+    <!-- Customer Market Section -->
+    <section id="customerMarketSection" class="hidden fade-in">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-800">Fresh Produce Marketplace</h2>
+        <button id="backToSelection" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+          <i class="fas fa-arrow-left mr-2"></i> Back
+        </button>
       </div>
 
-      <!-- Tab Content -->
-      <div class="p-6">
-        <!-- Farmer Dashboard Content -->
-        <div id="dashboardContent" class="tab-content active">
-          <h3 class="text-xl font-bold mb-4">Manage Your Farming Details</h3>
-          
-          <!-- Profile Form -->
-          <form id="farmerForm" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <!-- Profile Photo Upload -->
-              <div class="col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
-                <div class="flex items-center space-x-4">
-                  <div class="relative">
-                    <img id="profilePreview" class="w-24 h-24 rounded-full object-cover border-2 border-gray-300" src="https://via.placeholder.com/100" alt="Profile Preview">
-                    <input type="file" id="profilePhoto" accept="image/*" class="hidden">
+      <!-- Market Filters -->
+      <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+        <h3 class="text-xl font-bold mb-4">Filter Products</h3>
+        <div class="flex flex-wrap gap-4">
+          <div>
+            <label for="productTypeFilter" class="block text-sm font-medium text-gray-700 mb-1">Product Type</label>
+            <select id="productTypeFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+              <option value="all">All Products</option>
+              <option value="vegetables">Vegetables</option>
+              <option value="fruits">Fruits</option>
+              <option value="grains">Grains</option>
+              <option value="dairy">Dairy</option>
+            </select>
+          </div>
+          <div>
+            <label for="locationFilter" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+            <select id="locationFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+              <option value="all">All Locations</option>
+              <option value="north">Northern Region</option>
+              <option value="south">Southern Region</option>
+              <option value="east">Eastern Region</option>
+              <option value="west">Western Region</option>
+            </select>
+          </div>
+          <div class="flex items-end">
+            <button id="applyMarketFilters" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Listings -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <!-- Product Card 1 -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
+          <div class="h-48 bg-gradient-to-r from-green-400 to-green-500 relative">
+            <span class="absolute top-3 right-3 bg-white text-green-700 text-xs font-bold px-2 py-1 rounded-full">Fresh</span>
+          </div>
+          <div class="p-4">
+            <div class="flex justify-between items-start mb-2">
+              <h4 class="font-bold text-lg">Organic Tomatoes</h4>
+              <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">$2.99/kg</span>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">Fresh organic tomatoes harvested yesterday</p>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> Green Valley Farms</span>
+              <span class="text-gray-500">15 km away</span>
+            </div>
+          </div>
+          <div class="bg-gray-50 px-4 py-3 flex justify-between items-center">
+            <button class="text-green-600 hover:text-green-700 text-sm font-medium">
+              <i class="fas fa-shopping-cart mr-1"></i> Add to Cart
+            </button>
+            <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              <i class="fas fa-info-circle mr-1"></i> Details
+            </button>
+          </div>
+        </div>
+
+        <!-- Product Card 2 -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
+          <div class="h-48 bg-gradient-to-r from-yellow-400 to-yellow-500 relative">
+            <span class="absolute top-3 right-3 bg-white text-yellow-700 text-xs font-bold px-2 py-1 rounded-full">Sweet</span>
+          </div>
+          <div class="p-4">
+            <div class="flex justify-between items-start mb-2">
+              <h4 class="font-bold text-lg">Fresh Strawberries</h4>
+              <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">$4.50/kg</span>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">Sweet and juicy strawberries, pesticide-free</p>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> Berry Good Farms</span>
+              <span class="text-gray-500">8 km away</span>
+            </div>
+          </div>
+          <div class="bg-gray-50 px-4 py-3 flex justify-between items-center">
+            <button class="text-green-600 hover:text-green-700 text-sm font-medium">
+              <i class="fas fa-shopping-cart mr-1"></i> Add to Cart
+            </button>
+            <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              <i class="fas fa-info-circle mr-1"></i> Details
+            </button>
+          </div>
+        </div>
+
+        <!-- Product Card 3 -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
+          <div class="h-48 bg-gradient-to-r from-amber-600 to-amber-700 relative">
+            <span class="absolute top-3 right-3 bg-white text-amber-700 text-xs font-bold px-2 py-1 rounded-full">Whole Grain</span>
+          </div>
+          <div class="p-4">
+            <div class="flex justify-between items-start mb-2">
+              <h4 class="font-bold text-lg">Organic Wheat</h4>
+              <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">$1.20/kg</span>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">High-quality organic wheat, perfect for baking</p>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> Golden Fields</span>
+              <span class="text-gray-500">25 km away</span>
+            </div>
+          </div>
+          <div class="bg-gray-50 px-4 py-3 flex justify-between items-center">
+            <button class="text-green-600 hover:text-green-700 text-sm font-medium">
+              <i class="fas fa-shopping-cart mr-1"></i> Add to Cart
+            </button>
+            <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              <i class="fas fa-info-circle mr-1"></i> Details
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Market Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          <div class="flex items-center">
+            <div class="bg-green-100 p-3 rounded-lg mr-4">
+              <i class="fas fa-store text-green-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Active Farmers</p>
+              <p class="text-xl font-bold">247</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          <div class="flex items-center">
+            <div class="bg-blue-100 p-3 rounded-lg mr-4">
+              <i class="fas fa-shopping-basket text-blue-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Products Available</p>
+              <p class="text-xl font-bold">1,842</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          <div class="flex items-center">
+            <div class="bg-yellow-100 p-3 rounded-lg mr-4">
+              <i class="fas fa-truck text-yellow-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Orders Today</p>
+              <p class="text-xl font-bold">156</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          <div class="flex items-center">
+            <div class="bg-purple-100 p-3 rounded-lg mr-4">
+              <i class="fas fa-users text-purple-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Happy Customers</p>
+              <p class="text-xl font-bold">5,327</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Farmer Authentication Section -->
+    <section id="farmerAuthSection" class="hidden max-w-md mx-auto fade-in">
+      <div class="bg-white rounded-2xl shadow-lg p-8">
+        <div class="text-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-800">Farmer Login</h2>
+          <p class="text-gray-600 mt-2">Access your farmer dashboard</p>
+        </div>
+
+        <button id="googleLogin" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium flex items-center justify-center transition-colors">
+          <i class="fab fa-google mr-2"></i> Sign in with Google
+        </button>
+
+        <div class="mt-6 text-center">
+          <p class="text-xs text-gray-500">Don't have an account? Sign in with Google to create one.</p>
+        </div>
+
+        <button id="backToSelectionFromAuth" class="w-full bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg font-medium mt-4 transition-colors">
+          <i class="fas fa-arrow-left mr-2"></i> Back to Selection
+        </button>
+      </div>
+    </section>
+
+    <!-- Farmer Dashboard Section -->
+    <section id="farmerDashboardSection" class="hidden fade-in">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-800">Farmer Dashboard</h2>
+        <button id="backToSelectionFromDashboard" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+          <i class="fas fa-arrow-left mr-2"></i> Back
+        </button>
+      </div>
+
+      <!-- Welcome Farmer -->
+      <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg mb-8">
+        <h2 class="text-2xl font-bold mb-2">Welcome, <span id="farmerWelcomeName"></span>!</h2>
+        <p class="opacity-90">Manage your farm profile, upload crop images, and connect with customers.</p>
+      </div>
+
+      <!-- Dashboard Tabs -->
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+        <div class="border-b">
+          <nav class="flex">
+            <button id="profileTab" class="tab-button active px-6 py-3 font-medium text-green-600 border-b-2 border-green-600">
+              <i class="fas fa-user mr-2"></i> Farm Profile
+            </button>
+            <button id="cropsTab" class="tab-button px-6 py-3 font-medium text-gray-500 hover:text-gray-700">
+              <i class="fas fa-seedling mr-2"></i> My Crops
+            </button>
+            <button id="marketTab" class="tab-button px-6 py-3 font-medium text-gray-500 hover:text-gray-700">
+              <i class="fas fa-store mr-2"></i> Market Insights
+            </button>
+          </nav>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="p-6">
+          <!-- Profile Tab Content -->
+          <div id="profileContent" class="tab-content active">
+            <h3 class="text-xl font-bold mb-4">Farm Profile Management</h3>
+            
+            <!-- Profile Form -->
+            <form id="farmerForm" class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Profile Photo Upload -->
+                <div class="col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
+                  <div class="flex items-center space-x-4">
+                    <div class="relative">
+                      <img id="profilePreview" class="w-24 h-24 rounded-full object-cover border-2 border-gray-300" src="https://via.placeholder.com/100" alt="Profile Preview">
+                      <input type="file" id="profilePhoto" accept="image/*" class="hidden">
+                    </div>
+                    <div>
+                      <button type="button" id="uploadPhotoBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-upload mr-1"></i> Upload Photo
+                      </button>
+                      <p class="text-xs text-gray-500 mt-1">JPG, PNG or GIF (Max 5MB)</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- WhatsApp Number -->
+                <div>
+                  <label for="whatsapp" class="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
+                  <input type="tel" id="whatsapp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="+1234567890">
+                </div>
+
+                <!-- Farm Location -->
+                <div>
+                  <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Farm Location</label>
+                  <input type="text" id="location" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="Enter your farm location">
+                </div>
+
+                <!-- Farm Size -->
+                <div>
+                  <label for="farmSize" class="block text-sm font-medium text-gray-700 mb-1">Farm Size (acres)</label>
+                  <input type="number" id="farmSize" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="Enter farm size in acres">
+                </div>
+
+                <!-- Farming Experience -->
+                <div>
+                  <label for="experience" class="block text-sm font-medium text-gray-700 mb-1">Farming Experience (years)</label>
+                  <input type="number" id="experience" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="Years of experience">
+                </div>
+
+                <!-- Farm Description -->
+                <div class="col-span-2">
+                  <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Farm Description</label>
+                  <textarea id="description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="Tell customers about your farm and practices"></textarea>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="flex justify-end">
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                  <i class="fas fa-save mr-1"></i> Save Profile
+                </button>
+              </div>
+            </form>
+
+            <!-- Current Profile Details -->
+            <div class="mt-8">
+              <h3 class="text-xl font-bold mb-4">Your Farm Profile</h3>
+              <div id="profileDetails" class="bg-gray-50 rounded-lg p-4">
+                <p class="text-gray-500 text-center">No profile details saved yet. Fill out the form above to create your farm profile.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Crops Tab Content -->
+          <div id="cropsContent" class="tab-content hidden">
+            <h3 class="text-xl font-bold mb-4">Manage Your Crops</h3>
+            
+            <!-- Add New Crop Form -->
+            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+              <h4 class="text-lg font-bold mb-4">Add New Crop</h4>
+              <form id="cropForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <!-- Crop Image Upload -->
+                  <div class="col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Crop Image</label>
+                    <div class="flex items-center space-x-4">
+                      <div class="relative">
+                        <img id="cropImagePreview" class="w-32 h-32 rounded-lg object-cover border-2 border-gray-300" src="https://via.placeholder.com/150" alt="Crop Image Preview">
+                        <input type="file" id="cropImage" accept="image/*" class="hidden">
+                      </div>
+                      <div>
+                        <button type="button" id="uploadCropImageBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                          <i class="fas fa-upload mr-1"></i> Upload Image
+                        </button>
+                        <p class="text-xs text-gray-500 mt-1">JPG, PNG or GIF (Max 5MB)</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Crop Type -->
+                  <div>
+                    <label for="cropType" class="block text-sm font-medium text-gray-700 mb-1">Crop Type</label>
+                    <select id="cropType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                      <option value="">Select Crop Type</option>
+                      <option value="wheat">Wheat</option>
+                      <option value="rice">Rice</option>
+                      <option value="corn">Corn</option>
+                      <option value="soybean">Soybean</option>
+                      <option value="vegetables">Vegetables</option>
+                      <option value="fruits">Fruits</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <!-- Crop Variety -->
+                  <div>
+                    <label for="cropVariety" class="block text-sm font-medium text-gray-700 mb-1">Crop Variety</label>
+                    <input type="text" id="cropVariety" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="Enter crop variety">
+                  </div>
+
+                  <!-- Planting Date -->
+                  <div>
+                    <label for="plantingDate" class="block text-sm font-medium text-gray-700 mb-1">Planting Date</label>
+                    <input type="date" id="plantingDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                  </div>
+
+                  <!-- Expected Harvest Date -->
+                  <div>
+                    <label for="harvestDate" class="block text-sm font-medium text-gray-700 mb-1">Expected Harvest Date</label>
+                    <input type="date" id="harvestDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
+                  </div>
+
+                  <!-- Estimated Yield -->
+                  <div>
+                    <label for="yield" class="block text-sm font-medium text-gray-700 mb-1">Estimated Yield (kg/hectare)</label>
+                    <input type="number" id="yield" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="Enter estimated yield">
+                  </div>
+
+                  <!-- Price per kg -->
+                  <div>
+                    <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Price per kg ($)</label>
+                    <input type="number" step="0.01" id="price" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="Enter price per kg">
+                  </div>
+                </div>
+
+                <!-- Additional Notes -->
+                <div>
+                  <label for="cropNotes" class="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
+                  <textarea id="cropNotes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="Any additional information about your crop"></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end">
+                  <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                    <i class="fas fa-plus mr-1"></i> Add Crop
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Current Crops -->
+            <div>
+              <h4 class="text-lg font-bold mb-4">Your Current Crops</h4>
+              <div id="cropsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-gray-100 rounded-lg p-4 text-center">
+                  <p class="text-gray-500">No crops added yet. Use the form above to add your crops.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Market Tab Content -->
+          <div id="marketContent" class="tab-content hidden">
+            <h3 class="text-xl font-bold mb-4">Market Insights</h3>
+            
+            <!-- Market Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                <div class="flex items-center">
+                  <div class="bg-green-100 p-3 rounded-lg mr-4">
+                    <i class="fas fa-eye text-green-600 text-xl"></i>
                   </div>
                   <div>
-                    <button type="button" id="uploadPhotoBtn" class="bg-primary hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium">
-                      <i class="fas fa-upload mr-1"></i> Upload Photo
-                    </button>
-                    <p class="text-xs text-gray-500 mt-1">JPG, PNG or GIF (Max 5MB)</p>
+                    <p class="text-sm text-gray-500">Profile Views</p>
+                    <p class="text-xl font-bold">147</p>
                   </div>
                 </div>
               </div>
-
-              <!-- WhatsApp Number -->
-              <div>
-                <label for="whatsapp" class="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
-                <input type="tel" id="whatsapp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="+1234567890">
-              </div>
-
-              <!-- Farm Location -->
-              <div>
-                <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Farm Location</label>
-                <input type="text" id="location" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="Enter your farm location">
-              </div>
-
-              <!-- Crop Type -->
-              <div>
-                <label for="cropType" class="block text-sm font-medium text-gray-700 mb-1">Crop Type</label>
-                <select id="cropType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
-                  <option value="">Select Crop Type</option>
-                  <option value="wheat">Wheat</option>
-                  <option value="rice">Rice</option>
-                  <option value="corn">Corn</option>
-                  <option value="soybean">Soybean</option>
-                  <option value="cotton">Cotton</option>
-                  <option value="vegetables">Vegetables</option>
-                  <option value="fruits">Fruits</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <!-- Crop Variety -->
-              <div>
-                <label for="cropVariety" class="block text-sm font-medium text-gray-700 mb-1">Crop Variety</label>
-                <input type="text" id="cropVariety" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="Enter crop variety">
-              </div>
-
-              <!-- Planting Date -->
-              <div>
-                <label for="plantingDate" class="block text-sm font-medium text-gray-700 mb-1">Planting Date</label>
-                <input type="date" id="plantingDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
-              </div>
-
-              <!-- Expected Harvest Date -->
-              <div>
-                <label for="harvestDate" class="block text-sm font-medium text-gray-700 mb-1">Expected Harvest Date</label>
-                <input type="date" id="harvestDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
-              </div>
-
-              <!-- Estimated Yield -->
-              <div>
-                <label for="yield" class="block text-sm font-medium text-gray-700 mb-1">Estimated Yield (kg/hectare)</label>
-                <input type="number" id="yield" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="Enter estimated yield">
-              </div>
-
-              <!-- Additional Notes -->
-              <div class="col-span-2">
-                <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
-                <textarea id="notes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="Any additional information about your crops"></textarea>
-              </div>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="flex justify-end">
-              <button type="submit" class="bg-primary hover:bg-green-500 text-white px-6 py-2 rounded-lg font-medium">
-                <i class="fas fa-save mr-1"></i> Save Details
-              </button>
-            </div>
-          </form>
-
-          <!-- Current Crop Details -->
-          <div class="mt-8">
-            <h3 class="text-xl font-bold mb-4">Your Current Crop Details</h3>
-            <div id="cropDetails" class="bg-gray-50 rounded-lg p-4">
-              <p class="text-gray-500 text-center">No crop details saved yet. Fill out the form above to add your crop information.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Market Explorer Content -->
-        <div id="marketContent" class="tab-content hidden">
-          <h3 class="text-xl font-bold mb-4">Explore Market Opportunities</h3>
-          
-          <!-- Market Filters -->
-          <div class="bg-gray-50 rounded-lg p-4 mb-6">
-            <div class="flex flex-wrap gap-4">
-              <div>
-                <label for="marketCropFilter" class="block text-sm font-medium text-gray-700 mb-1">Crop Type</label>
-                <select id="marketCropFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
-                  <option value="all">All Crops</option>
-                  <option value="wheat">Wheat</option>
-                  <option value="rice">Rice</option>
-                  <option value="corn">Corn</option>
-                  <option value="soybean">Soybean</option>
-                  <option value="cotton">Cotton</option>
-                  <option value="vegetables">Vegetables</option>
-                  <option value="fruits">Fruits</option>
-                </select>
-              </div>
-              <div>
-                <label for="marketLocationFilter" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                <select id="marketLocationFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
-                  <option value="all">All Locations</option>
-                  <option value="north">Northern Region</option>
-                  <option value="south">Southern Region</option>
-                  <option value="east">Eastern Region</option>
-                  <option value="west">Western Region</option>
-                </select>
-              </div>
-              <div class="flex items-end">
-                <button id="applyFilters" class="bg-primary hover:bg-green-500 text-white px-4 py-2 rounded-lg font-medium">
-                  Apply Filters
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Market Listings -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Market Card 1 -->
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-              <div class="p-4">
-                <div class="flex justify-between items-start mb-2">
-                  <h4 class="font-bold text-lg">Premium Wheat Buyers</h4>
-                  <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">High Demand</span>
-                </div>
-                <p class="text-gray-600 text-sm mb-4">Looking for high-quality wheat with protein content above 12%</p>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> Northern Region</span>
-                  <span class="font-medium text-primary">$320/ton</span>
+              <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                <div class="flex items-center">
+                  <div class="bg-blue-100 p-3 rounded-lg mr-4">
+                    <i class="fas fa-shopping-cart text-blue-600 text-xl"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Orders This Month</p>
+                    <p class="text-xl font-bold">23</p>
+                  </div>
                 </div>
               </div>
-              <div class="bg-gray-50 px-4 py-3 flex justify-between items-center">
-                <span class="text-xs text-gray-500">Posted 2 days ago</span>
-                <button class="text-primary hover:text-green-500 text-sm font-medium">
-                  <i class="fas fa-phone-alt mr-1"></i> Contact
-                </button>
+              <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                <div class="flex items-center">
+                  <div class="bg-yellow-100 p-3 rounded-lg mr-4">
+                    <i class="fas fa-dollar-sign text-yellow-600 text-xl"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Monthly Revenue</p>
+                    <p class="text-xl font-bold">$1,240</p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- Market Card 2 -->
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-              <div class="p-4">
-                <div class="flex justify-between items-start mb-2">
-                  <h4 class="font-bold text-lg">Organic Vegetables</h4>
-                  <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Certified Organic</span>
-                </div>
-                <p class="text-gray-600 text-sm mb-4">Restaurant chain seeking certified organic vegetables for premium menu</p>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> Eastern Region</span>
-                  <span class="font-medium text-primary">Negotiable</span>
-                </div>
-              </div>
-              <div class="bg-gray-50 px-4 py-3 flex justify-between items-center">
-                <span class="text-xs text-gray-500">Posted 5 days ago</span>
-                <button class="text-primary hover:text-green-500 text-sm font-medium">
-                  <i class="fas fa-phone-alt mr-1"></i> Contact
-                </button>
+            <!-- Price Trends -->
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+              <h4 class="text-lg font-bold mb-4">Current Market Prices</h4>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr class="bg-gray-50">
+                      <th class="px-4 py-2 text-left">Crop</th>
+                      <th class="px-4 py-2 text-left">Avg. Price ($/kg)</th>
+                      <th class="px-4 py-2 text-left">Trend</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b">
+                      <td class="px-4 py-3">Tomatoes</td>
+                      <td class="px-4 py-3">$2.85</td>
+                      <td class="px-4 py-3 text-green-600"><i class="fas fa-arrow-up mr-1"></i> +5%</td>
+                    </tr>
+                    <tr class="border-b">
+                      <td class="px-4 py-3">Strawberries</td>
+                      <td class="px-4 py-3">$4.20</td>
+                      <td class="px-4 py-3 text-green-600"><i class="fas fa-arrow-up mr-1"></i> +3%</td>
+                    </tr>
+                    <tr class="border-b">
+                      <td class="px-4 py-3">Wheat</td>
+                      <td class="px-4 py-3">$1.15</td>
+                      <td class="px-4 py-3 text-red-600"><i class="fas fa-arrow-down mr-1"></i> -2%</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-3">Corn</td>
+                      <td class="px-4 py-3">$0.95</td>
+                      <td class="px-4 py-3 text-gray-600"><i class="fas fa-minus mr-1"></i> Stable</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 
-            <!-- Market Card 3 -->
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-              <div class="p-4">
-                <div class="flex justify-between items-start mb-2">
-                  <h4 class="font-bold text-lg">Rice Exporters</h4>
-                  <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Export Quality</span>
-                </div>
-                <p class="text-gray-600 text-sm mb-4">Export company seeking basmati rice for international markets</p>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> All Regions</span>
-                  <span class="font-medium text-primary">$450/ton</span>
-                </div>
-              </div>
-              <div class="bg-gray-50 px-4 py-3 flex justify-between items-center">
-                <span class="text-xs text-gray-500">Posted 1 week ago</span>
-                <button class="text-primary hover:text-green-500 text-sm font-medium">
-                  <i class="fas fa-phone-alt mr-1"></i> Contact
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Market Stats -->
-          <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-              <div class="flex items-center">
-                <div class="bg-green-100 p-3 rounded-lg mr-4">
-                  <i class="fas fa-chart-line text-primary text-xl"></i>
+            <!-- Customer Reviews -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+              <h4 class="text-lg font-bold mb-4">Recent Customer Reviews</h4>
+              <div class="space-y-4">
+                <div class="border-b pb-4">
+                  <div class="flex justify-between mb-2">
+                    <span class="font-medium">Sarah Johnson</span>
+                    <div class="text-yellow-400">
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                    </div>
+                  </div>
+                  <p class="text-gray-600">"The tomatoes were incredibly fresh and flavorful! Will definitely order again."</p>
+                  <p class="text-gray-400 text-sm mt-1">2 days ago</p>
                 </div>
                 <div>
-                  <p class="text-sm text-gray-500">Average Price</p>
-                  <p class="text-xl font-bold">$385/ton</p>
-                </div>
-              </div>
-            </div>
-            <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-              <div class="flex items-center">
-                <div class="bg-blue-100 p-3 rounded-lg mr-4">
-                  <i class="fas fa-users text-blue-500 text-xl"></i>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500">Active Buyers</p>
-                  <p class="text-xl font-bold">142</p>
-                </div>
-              </div>
-            </div>
-            <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-              <div class="flex items-center">
-                <div class="bg-yellow-100 p-3 rounded-lg mr-4">
-                  <i class="fas fa-tags text-yellow-500 text-xl"></i>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500">Your Listings</p>
-                  <p class="text-xl font-bold">3</p>
+                  <div class="flex justify-between mb-2">
+                    <span class="font-medium">Michael Brown</span>
+                    <div class="text-yellow-400">
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star-half-alt"></i>
+                    </div>
+                  </div>
+                  <p class="text-gray-600">"Great quality strawberries. Sweet and perfectly ripe. Fast delivery too!"</p>
+                  <p class="text-gray-400 text-sm mt-1">1 week ago</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   </main>
 
   <script>
@@ -333,67 +626,74 @@
     const db = firebase.firestore();
     const storage = firebase.storage();
 
-    // Check authentication state
+    // DOM Elements
+    const userTypeSection = document.getElementById('userTypeSection');
+    const customerMarketSection = document.getElementById('customerMarketSection');
+    const farmerAuthSection = document.getElementById('farmerAuthSection');
+    const farmerDashboardSection = document.getElementById('farmerDashboardSection');
+    const userSection = document.getElementById('userSection');
+    const welcomeSection = document.getElementById('welcomeSection');
+
+    // Check authentication state on page load
     auth.onAuthStateChanged(user => {
-      if (!user) {
-        // Redirect to login if not authenticated
-        window.location.href = 'login.html';
-      } else {
-        // User is signed in
+      if (user) {
+        // User is signed in (farmer)
+        showFarmerDashboard();
         document.getElementById('userPhoto').src = user.photoURL || 'https://via.placeholder.com/100';
-        document.getElementById('userName').textContent = user.displayName || 'User';
-        document.getElementById('welcomeName').textContent = user.displayName || 'Farmer';
+        document.getElementById('userName').textContent = user.displayName || 'Farmer';
+        document.getElementById('farmerWelcomeName').textContent = user.displayName || 'Farmer';
+        userSection.classList.remove('hidden');
         
-        // Load user data from Firestore
-        loadUserData(user.uid);
+        // Load farmer data from Firestore
+        loadFarmerData(user.uid);
+      } else {
+        // User is not signed in
+        showUserTypeSelection();
+        userSection.classList.add('hidden');
       }
+    });
+
+    // User Type Selection
+    document.getElementById('customerCard').addEventListener('click', showCustomerMarket);
+    document.getElementById('farmerCard').addEventListener('click', showFarmerAuth);
+
+    // Navigation Back Buttons
+    document.getElementById('backToSelection').addEventListener('click', showUserTypeSelection);
+    document.getElementById('backToSelectionFromAuth').addEventListener('click', showUserTypeSelection);
+    document.getElementById('backToSelectionFromDashboard').addEventListener('click', showUserTypeSelection);
+
+    // Farmer Authentication
+    document.getElementById('googleLogin').addEventListener('click', () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+        .then(() => {
+          return auth.signInWithPopup(provider);
+        })
+        .then(() => {
+          // Authentication successful, dashboard will be shown automatically
+          // due to the auth state change listener
+        })
+        .catch(err => {
+          console.error('Authentication error:', err);
+          alert('Authentication failed. Please try again.');
+        });
     });
 
     // Logout functionality
     document.getElementById('logoutBtn').addEventListener('click', () => {
       auth.signOut().then(() => {
-        window.location.href = 'login.html';
+        showUserTypeSelection();
       }).catch(error => {
         console.error('Logout error:', error);
       });
     });
 
-    // Tab switching functionality
-    document.getElementById('dashboardTab').addEventListener('click', () => {
-      switchTab('dashboard');
-    });
+    // Dashboard Tab Switching
+    document.getElementById('profileTab').addEventListener('click', () => switchTab('profile'));
+    document.getElementById('cropsTab').addEventListener('click', () => switchTab('crops'));
+    document.getElementById('marketTab').addEventListener('click', () => switchTab('market'));
 
-    document.getElementById('marketTab').addEventListener('click', () => {
-      switchTab('market');
-    });
-
-    function switchTab(tabName) {
-      // Update tab buttons
-      document.querySelectorAll('.tab-button').forEach(button => {
-        button.classList.remove('active', 'text-primary', 'border-primary');
-        button.classList.add('text-gray-500');
-      });
-
-      // Show/hide tab content
-      document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.add('hidden');
-        content.classList.remove('active');
-      });
-
-      if (tabName === 'dashboard') {
-        document.getElementById('dashboardTab').classList.add('active', 'text-primary', 'border-primary');
-        document.getElementById('dashboardTab').classList.remove('text-gray-500');
-        document.getElementById('dashboardContent').classList.remove('hidden');
-        document.getElementById('dashboardContent').classList.add('active');
-      } else if (tabName === 'market') {
-        document.getElementById('marketTab').classList.add('active', 'text-primary', 'border-primary');
-        document.getElementById('marketTab').classList.remove('text-gray-500');
-        document.getElementById('marketContent').classList.remove('hidden');
-        document.getElementById('marketContent').classList.add('active');
-      }
-    }
-
-    // Profile photo upload
+    // Profile Photo Upload
     document.getElementById('uploadPhotoBtn').addEventListener('click', () => {
       document.getElementById('profilePhoto').click();
     });
@@ -407,12 +707,43 @@
         };
         reader.readAsDataURL(file);
         
-        // In a real implementation, you would upload this to Firebase Storage
-        // and update the user's profile photo URL
+        // Upload to Firebase Storage
+        const user = auth.currentUser;
+        if (user) {
+          const storageRef = storage.ref();
+          const profileImagesRef = storageRef.child(`profileImages/${user.uid}/profile.jpg`);
+          
+          profileImagesRef.put(file).then((snapshot) => {
+            console.log('Profile image uploaded successfully');
+            // Update user profile in Firestore
+            db.collection('farmers').doc(user.uid).update({
+              profileImageUrl: `profileImages/${user.uid}/profile.jpg`,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          }).catch(error => {
+            console.error('Error uploading profile image:', error);
+          });
+        }
       }
     });
 
-    // Form submission
+    // Crop Image Upload
+    document.getElementById('uploadCropImageBtn').addEventListener('click', () => {
+      document.getElementById('cropImage').click();
+    });
+
+    document.getElementById('cropImage').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          document.getElementById('cropImagePreview').src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Farmer Profile Form Submission
     document.getElementById('farmerForm').addEventListener('submit', function(e) {
       e.preventDefault();
       
@@ -422,29 +753,94 @@
       const farmerData = {
         whatsapp: document.getElementById('whatsapp').value,
         location: document.getElementById('location').value,
-        cropType: document.getElementById('cropType').value,
-        cropVariety: document.getElementById('cropVariety').value,
-        plantingDate: document.getElementById('plantingDate').value,
-        harvestDate: document.getElementById('harvestDate').value,
-        yield: document.getElementById('yield').value,
-        notes: document.getElementById('notes').value,
+        farmSize: document.getElementById('farmSize').value,
+        experience: document.getElementById('experience').value,
+        description: document.getElementById('description').value,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
       
       // Save to Firestore
       db.collection('farmers').doc(user.uid).set(farmerData, { merge: true })
         .then(() => {
-          alert('Your farming details have been saved successfully!');
-          updateCropDetailsDisplay(farmerData);
+          alert('Your farm profile has been saved successfully!');
+          updateProfileDetailsDisplay(farmerData);
         })
         .catch(error => {
           console.error('Error saving farmer data:', error);
-          alert('Error saving your details. Please try again.');
+          alert('Error saving your profile. Please try again.');
         });
     });
 
-    // Load user data from Firestore
-    function loadUserData(userId) {
+    // Crop Form Submission
+    document.getElementById('cropForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const user = auth.currentUser;
+      if (!user) return;
+      
+      const cropData = {
+        cropType: document.getElementById('cropType').value,
+        cropVariety: document.getElementById('cropVariety').value,
+        plantingDate: document.getElementById('plantingDate').value,
+        harvestDate: document.getElementById('harvestDate').value,
+        yield: document.getElementById('yield').value,
+        price: document.getElementById('price').value,
+        notes: document.getElementById('cropNotes').value,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      
+      // Upload crop image if selected
+      const cropImageFile = document.getElementById('cropImage').files[0];
+      if (cropImageFile) {
+        const storageRef = storage.ref();
+        const cropId = Date.now().toString(); // Simple ID generation
+        const cropImagesRef = storageRef.child(`cropImages/${user.uid}/${cropId}.jpg`);
+        
+        cropImagesRef.put(cropImageFile).then((snapshot) => {
+          // Add crop image URL to crop data
+          cropData.imageUrl = `cropImages/${user.uid}/${cropId}.jpg`;
+          
+          // Save crop data to Firestore
+          saveCropData(user.uid, cropData);
+        }).catch(error => {
+          console.error('Error uploading crop image:', error);
+          alert('Error uploading crop image. Please try again.');
+        });
+      } else {
+        // Save crop data without image
+        saveCropData(user.uid, cropData);
+      }
+    });
+
+    // Market Filters
+    document.getElementById('applyMarketFilters').addEventListener('click', () => {
+      const productFilter = document.getElementById('productTypeFilter').value;
+      const locationFilter = document.getElementById('locationFilter').value;
+      
+      // In a real implementation, this would filter the market listings
+      alert(`Filters applied:\nProduct: ${productFilter}\nLocation: ${locationFilter}`);
+    });
+
+    // Function to save crop data
+    function saveCropData(userId, cropData) {
+      db.collection('crops').add({
+        ...cropData,
+        farmerId: userId
+      })
+      .then(() => {
+        alert('Crop added successfully!');
+        document.getElementById('cropForm').reset();
+        document.getElementById('cropImagePreview').src = 'https://via.placeholder.com/150';
+        loadCropsData(userId);
+      })
+      .catch(error => {
+        console.error('Error saving crop data:', error);
+        alert('Error saving crop data. Please try again.');
+      });
+    }
+
+    // Function to load farmer data
+    function loadFarmerData(userId) {
       db.collection('farmers').doc(userId).get()
         .then(doc => {
           if (doc.exists) {
@@ -452,66 +848,187 @@
             // Populate form fields
             document.getElementById('whatsapp').value = data.whatsapp || '';
             document.getElementById('location').value = data.location || '';
-            document.getElementById('cropType').value = data.cropType || '';
-            document.getElementById('cropVariety').value = data.cropVariety || '';
-            document.getElementById('plantingDate').value = data.plantingDate || '';
-            document.getElementById('harvestDate').value = data.harvestDate || '';
-            document.getElementById('yield').value = data.yield || '';
-            document.getElementById('notes').value = data.notes || '';
+            document.getElementById('farmSize').value = data.farmSize || '';
+            document.getElementById('experience').value = data.experience || '';
+            document.getElementById('description').value = data.description || '';
             
-            // Update crop details display
-            updateCropDetailsDisplay(data);
+            // Update profile details display
+            updateProfileDetailsDisplay(data);
+            
+            // Load profile image if exists
+            if (data.profileImageUrl) {
+              storage.ref(data.profileImageUrl).getDownloadURL()
+                .then(url => {
+                  document.getElementById('profilePreview').src = url;
+                })
+                .catch(error => {
+                  console.error('Error loading profile image:', error);
+                });
+            }
           }
         })
         .catch(error => {
-          console.error('Error loading user data:', error);
+          console.error('Error loading farmer data:', error);
+        });
+        
+      // Load crops data
+      loadCropsData(userId);
+    }
+
+    // Function to load crops data
+    function loadCropsData(userId) {
+      db.collection('crops').where('farmerId', '==', userId).get()
+        .then(querySnapshot => {
+          const cropsList = document.getElementById('cropsList');
+          cropsList.innerHTML = '';
+          
+          if (querySnapshot.empty) {
+            cropsList.innerHTML = `
+              <div class="col-span-2 bg-gray-100 rounded-lg p-4 text-center">
+                <p class="text-gray-500">No crops added yet. Use the form above to add your crops.</p>
+              </div>
+            `;
+            return;
+          }
+          
+          querySnapshot.forEach(doc => {
+            const crop = doc.data();
+            const cropId = doc.id;
+            
+            let cropImageUrl = 'https://via.placeholder.com/150';
+            if (crop.imageUrl) {
+              storage.ref(crop.imageUrl).getDownloadURL()
+                .then(url => {
+                  document.getElementById(`cropImage-${cropId}`).src = url;
+                })
+                .catch(error => {
+                  console.error('Error loading crop image:', error);
+                });
+            }
+            
+            const cropCard = `
+              <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <img id="cropImage-${cropId}" src="${cropImageUrl}" alt="${crop.cropType}" class="w-full h-40 object-cover">
+                <div class="p-4">
+                  <div class="flex justify-between items-start mb-2">
+                    <h5 class="font-bold">${crop.cropType}</h5>
+                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">$${crop.price}/kg</span>
+                  </div>
+                  <p class="text-sm text-gray-600 mb-2">Variety: ${crop.cropVariety || 'N/A'}</p>
+                  <p class="text-sm text-gray-600 mb-2">Planted: ${crop.plantingDate || 'N/A'}</p>
+                  <p class="text-sm text-gray-600">Expected Yield: ${crop.yield || 'N/A'} kg/hectare</p>
+                </div>
+              </div>
+            `;
+            
+            cropsList.innerHTML += cropCard;
+          });
+        })
+        .catch(error => {
+          console.error('Error loading crops data:', error);
         });
     }
 
-    // Update the crop details display
-    function updateCropDetailsDisplay(data) {
-      const cropDetails = document.getElementById('cropDetails');
+    // Function to update profile details display
+    function updateProfileDetailsDisplay(data) {
+      const profileDetails = document.getElementById('profileDetails');
       
-      if (data.cropType) {
-        cropDetails.innerHTML = `
+      if (data.location || data.farmSize) {
+        profileDetails.innerHTML = `
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="bg-white p-4 rounded-lg border border-gray-200">
-              <h4 class="font-bold text-lg mb-2">Crop Information</h4>
+              <h4 class="font-bold text-lg mb-2">Farm Information</h4>
               <div class="space-y-2">
-                <p><span class="font-medium">Type:</span> ${data.cropType}</p>
-                <p><span class="font-medium">Variety:</span> ${data.cropVariety || 'Not specified'}</p>
-                <p><span class="font-medium">Planted:</span> ${data.plantingDate || 'Not specified'}</p>
-                <p><span class="font-medium">Expected Harvest:</span> ${data.harvestDate || 'Not specified'}</p>
+                <p><span class="font-medium">Location:</span> ${data.location || 'Not specified'}</p>
+                <p><span class="font-medium">Farm Size:</span> ${data.farmSize ? data.farmSize + ' acres' : 'Not specified'}</p>
+                <p><span class="font-medium">Experience:</span> ${data.experience ? data.experience + ' years' : 'Not specified'}</p>
               </div>
             </div>
             <div class="bg-white p-4 rounded-lg border border-gray-200">
-              <h4 class="font-bold text-lg mb-2">Yield & Location</h4>
+              <h4 class="font-bold text-lg mb-2">Contact Information</h4>
               <div class="space-y-2">
-                <p><span class="font-medium">Estimated Yield:</span> ${data.yield ? data.yield + ' kg/hectare' : 'Not specified'}</p>
-                <p><span class="font-medium">Location:</span> ${data.location || 'Not specified'}</p>
-                <p><span class="font-medium">Contact:</span> ${data.whatsapp || 'Not specified'}</p>
+                <p><span class="font-medium">WhatsApp:</span> ${data.whatsapp || 'Not specified'}</p>
+                <p><span class="font-medium">Status:</span> <span class="text-green-600 font-medium">Active</span></p>
               </div>
             </div>
           </div>
-          ${data.notes ? `
+          ${data.description ? `
             <div class="mt-4 bg-white p-4 rounded-lg border border-gray-200">
-              <h4 class="font-bold text-lg mb-2">Additional Notes</h4>
-              <p>${data.notes}</p>
+              <h4 class="font-bold text-lg mb-2">Farm Description</h4>
+              <p>${data.description}</p>
             </div>
           ` : ''}
         `;
       }
     }
 
-    // Market filter functionality
-    document.getElementById('applyFilters').addEventListener('click', () => {
-      const cropFilter = document.getElementById('marketCropFilter').value;
-      const locationFilter = document.getElementById('marketLocationFilter').value;
-      
-      // In a real implementation, this would filter the market listings
-      // For now, we'll just show an alert
-      alert(`Filters applied:\nCrop: ${cropFilter}\nLocation: ${locationFilter}`);
-    });
+    // Function to switch tabs in farmer dashboard
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active', 'text-green-600', 'border-green-600');
+        button.classList.add('text-gray-500');
+      });
+
+      // Show/hide tab content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+        content.classList.remove('active');
+      });
+
+      if (tabName === 'profile') {
+        document.getElementById('profileTab').classList.add('active', 'text-green-600', 'border-green-600');
+        document.getElementById('profileTab').classList.remove('text-gray-500');
+        document.getElementById('profileContent').classList.remove('hidden');
+        document.getElementById('profileContent').classList.add('active');
+      } else if (tabName === 'crops') {
+        document.getElementById('cropsTab').classList.add('active', 'text-green-600', 'border-green-600');
+        document.getElementById('cropsTab').classList.remove('text-gray-500');
+        document.getElementById('cropsContent').classList.remove('hidden');
+        document.getElementById('cropsContent').classList.add('active');
+      } else if (tabName === 'market') {
+        document.getElementById('marketTab').classList.add('active', 'text-green-600', 'border-green-600');
+        document.getElementById('marketTab').classList.remove('text-gray-500');
+        document.getElementById('marketContent').classList.remove('hidden');
+        document.getElementById('marketContent').classList.add('active');
+      }
+    }
+
+    // Function to show user type selection
+    function showUserTypeSelection() {
+      userTypeSection.classList.remove('hidden');
+      customerMarketSection.classList.add('hidden');
+      farmerAuthSection.classList.add('hidden');
+      farmerDashboardSection.classList.add('hidden');
+      welcomeSection.classList.remove('hidden');
+    }
+
+    // Function to show customer market
+    function showCustomerMarket() {
+      userTypeSection.classList.add('hidden');
+      customerMarketSection.classList.remove('hidden');
+      farmerAuthSection.classList.add('hidden');
+      farmerDashboardSection.classList.add('hidden');
+      welcomeSection.classList.add('hidden');
+    }
+
+    // Function to show farmer authentication
+    function showFarmerAuth() {
+      userTypeSection.classList.add('hidden');
+      customerMarketSection.classList.add('hidden');
+      farmerAuthSection.classList.remove('hidden');
+      farmerDashboardSection.classList.add('hidden');
+      welcomeSection.classList.add('hidden');
+    }
+
+    // Function to show farmer dashboard
+    function showFarmerDashboard() {
+      userTypeSection.classList.add('hidden');
+      customerMarketSection.classList.add('hidden');
+      farmerAuthSection.classList.add('hidden');
+      farmerDashboardSection.classList.remove('hidden');
+      welcomeSection.classList.add('hidden');
+    }
   </script>
 </body>
 </html>
